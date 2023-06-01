@@ -1,0 +1,26 @@
+<RCC>
+  <qresource prefix="blank">
+    <file>blank-red.png</file>
+    <file>checked-blue.png</file>
+  </qresource>
+  <qresource prefix="minus">
+    <file>minus-blue.png</file>
+    <file>minus-red.png</file>
+  </qresource>
+  <qresource prefix="plus">
+    <file>plus-blue.png</file>
+    <file>plus-red.png</file>
+  </qresource>
+  <qresource prefix="arrow">
+    <file>arrow-down-blue.png</file>
+    <file>arrow-up-blue.png</file>
+    <file>arrow-down.png</file>
+    <file>arrow-up.png</file>
+    <file>arrow1.png</file>
+    <file>arrow2.png</file>
+  </qresource>
+  <qresource prefix="checked">
+    <file>blank-blue.png</file>
+    <file>checked-red.png</file>
+  </qresource>
+</RCC>
