@@ -3,6 +3,10 @@
     <file>blank-red.png</file>
     <file>checked-blue.png</file>
   </qresource>
+  <qresource prefix="download">
+    <file>download-blue.png</file>
+    <file>download-red.png</file>
+  </qresource>
   <qresource prefix="minus">
     <file>minus-blue.png</file>
     <file>minus-red.png</file>

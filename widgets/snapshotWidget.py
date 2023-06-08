@@ -17,6 +17,7 @@ class Ui_snapshot(object):
         snapshot.resize(270, 90)
         snapshot.setMinimumSize(QtCore.QSize(270, 90))
         snapshot.setMaximumSize(QtCore.QSize(270, 90))
+        snapshot.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.horizontalLayout = QtWidgets.QHBoxLayout(snapshot)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.Image = QtWidgets.QLabel(snapshot)
@@ -29,7 +30,17 @@ class Ui_snapshot(object):
         self.Image.setObjectName("Image")
         self.horizontalLayout.addWidget(self.Image)
         self.moreButton = QtWidgets.QPushButton(snapshot)
-        self.moreButton.setMinimumSize(QtCore.QSize(0, 24))
+        self.moreButton.setMinimumSize(QtCore.QSize(0, 30))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.moreButton.setFont(font)
+        self.moreButton.setStyleSheet("QPushButton{\n"
+"border:3px solid rgb(0,157,255);\n"
+"border-radius:6px;\n"
+"}\n"
+"QPushButton:hover:!pressed{\n"
+"border:3px solid  rgb(175,0,0);\n"
+"}")
         self.moreButton.setObjectName("moreButton")
         self.horizontalLayout.addWidget(self.moreButton)
         self.pushButton = QtWidgets.QPushButton(snapshot)

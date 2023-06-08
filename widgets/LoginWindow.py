@@ -12,38 +12,111 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(340, 480)
-        self.verticalLayout = QtWidgets.QVBoxLayout(Form)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.UserNameLineEdit = QtWidgets.QLineEdit(Form)
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.resize(340, 380)
+        Dialog.setStyleSheet("QWidget{\n"
+"background-color: rgb(255, 255, 255);\n"
+"}\n"
+"QLineEdit{\n"
+"border:2px solid #B8E2FF;\n"
+"border-radius:5px;\n"
+"background-color: rgb(250, 250, 250);\n"
+"}\n"
+"QLineEdit:focus{\n"
+"border:3px solid rgb(0,157,255);\n"
+"border-radius:5px;\n"
+"}")
+        self.label = QtWidgets.QLabel(Dialog)
+        self.label.setGeometry(QtCore.QRect(90, 30, 141, 51))
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setObjectName("label")
+        self.UserNameLineEdit = QtWidgets.QLineEdit(Dialog)
+        self.UserNameLineEdit.setGeometry(QtCore.QRect(40, 120, 250, 30))
+        self.UserNameLineEdit.setMinimumSize(QtCore.QSize(100, 30))
+        self.UserNameLineEdit.setMaximumSize(QtCore.QSize(250, 16777215))
+        self.UserNameLineEdit.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
+        self.UserNameLineEdit.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.UserNameLineEdit.setStyleSheet("")
+        self.UserNameLineEdit.setEchoMode(QtWidgets.QLineEdit.Normal)
         self.UserNameLineEdit.setObjectName("UserNameLineEdit")
-        self.verticalLayout.addWidget(self.UserNameLineEdit)
-        self.PasswordLineEdit = QtWidgets.QLineEdit(Form)
-        self.PasswordLineEdit.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
-        self.PasswordLineEdit.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.PasswordLineEdit = QtWidgets.QLineEdit(Dialog)
+        self.PasswordLineEdit.setGeometry(QtCore.QRect(40, 190, 250, 30))
+        self.PasswordLineEdit.setMinimumSize(QtCore.QSize(100, 30))
+        self.PasswordLineEdit.setMaximumSize(QtCore.QSize(250, 16777215))
         self.PasswordLineEdit.setEchoMode(QtWidgets.QLineEdit.Password)
         self.PasswordLineEdit.setObjectName("PasswordLineEdit")
-        self.verticalLayout.addWidget(self.PasswordLineEdit)
-        self.LoginButton = QtWidgets.QPushButton(Form)
+        self.checkBox = QtWidgets.QCheckBox(Dialog)
+        self.checkBox.setGeometry(QtCore.QRect(40, 250, 181, 31))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.checkBox.setFont(font)
+        self.checkBox.setStyleSheet("/* Чекбоксы*/\n"
+"QCheckBox::indicator{\n"
+"width:24px;\n"
+"height:24px;\n"
+"}\n"
+"QCheckBox::indicator:unchecked{\n"
+"background-image: url(:/blank/checked-blue.png);\n"
+"}\n"
+"QCheckBox::indicator:unchecked:hover, QCheckBox::indicator:unchecked:pressed{\n"
+"background-image: url(:/blank/blank-red.png);\n"
+"}\n"
+"QCheckBox::indicator:checked{\n"
+"background-image: url(:/checked/blank-blue.png);\n"
+"}\n"
+"QCheckBox::indicator:checked:hover, QCheckBox::indicator:checked:pressed{\n"
+"background-image: url(:/checked/checked-red.png);\n"
+"}\n"
+"")
+        self.checkBox.setObjectName("checkBox")
+        self.LoginButton = QtWidgets.QPushButton(Dialog)
+        self.LoginButton.setGeometry(QtCore.QRect(80, 320, 171, 31))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.LoginButton.setFont(font)
+        self.LoginButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.LoginButton.setStyleSheet("QPushButton{\n"
+"border:3px solid rgb(0,157,255);\n"
+"border-radius:6px;\n"
+"}\n"
+"QPushButton:hover:!pressed{\n"
+"border:3px solid  rgb(175,0,0);\n"
+"}")
         self.LoginButton.setObjectName("LoginButton")
-        self.verticalLayout.addWidget(self.LoginButton)
+        self.ErrorLabel = QtWidgets.QLabel(Dialog)
+        self.ErrorLabel.setGeometry(QtCore.QRect(40, 80, 271, 21))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.ErrorLabel.setFont(font)
+        self.ErrorLabel.setText("")
+        self.ErrorLabel.setObjectName("ErrorLabel")
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(Dialog)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-        self.LoginButton.setText(_translate("Form", "PushButton"))
+        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        self.label.setText(_translate("Dialog", "Авторизация"))
+        self.UserNameLineEdit.setPlaceholderText(_translate("Dialog", "Имя пользователя"))
+        self.PasswordLineEdit.setPlaceholderText(_translate("Dialog", "Пароль"))
+        self.checkBox.setText(_translate("Dialog", "Запомнить меня"))
+        self.LoginButton.setText(_translate("Dialog", "Войти"))
+import resources.img.Resources_rc
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    Form = QtWidgets.QWidget()
+    Dialog = QtWidgets.QDialog()
     ui = Ui_Form()
-    ui.setupUi(Form)
-    Form.show()
+    ui.setupUi(Dialog)
+    Dialog.show()
     sys.exit(app.exec_())

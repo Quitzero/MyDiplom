@@ -1,29 +1,31 @@
 import os, sys
-from PyQt5 import QtGui, QtWidgets, QtWebChannel, QtCore
-from PyQt5.QtCore import QDate
+from PyQt5 import QtWidgets, QtWebChannel, QtCore
+from PyQt5.QtCore import QDate, QThread, pyqtSignal
 from superqt import QDoubleRangeSlider
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, LineString, Point
+from PyQt5.QtGui import QDoubleValidator
+import configparser
+import keyring
 import re
-from PyQt5.QtCore import QThread, pyqtSignal
-
 
 from widgets.MainWindow import Ui_MainWindow
 from widgets.LoginWindow import Ui_Form
 from widgets.snapshotWidget import Ui_snapshot
 from widgets.infoWidget import Ui_Dialog
 from widgets.coordsWidget import Ui_Coords
+from widgets.addCoordsWidet import Ui_CoordsDialog
+from widgets.pageWidget import Ui_Page
 from DataBase import connect, crud
 
 
 class Backend(QtCore.QObject):
     @QtCore.pyqtSlot(list)
     def getCoord(self, Coord):
-        global myCoordList
         coord_tuples = [(d['lat'], d['lng']) for d in Coord[0]]
-        myCoordList = []
+        window.myCoordList = []
         for coord in coord_tuples:
-            myCoordList.append([coord[0], coord[1]])
-        window.showCoords()  
+            window.myCoordList.append([coord[0], coord[1]])
+        window.showCoords() 
         #QtWebEngineWidgets.QWebEngineView
 
 
@@ -42,10 +44,16 @@ class QueryThread(QThread):
         self.arg7 = Ingestion_date_to
 
     def run(self):
-        DBInfoList = []
+        window.DBInfoList = []
         index = 0
-        my_poly = Polygon(myCoordList)
+        if len(window.myCoordList) == 1:
+            my_poly = Point(window.myCoordList)
+        elif len(window.myCoordList) == 2:
+            my_poly = LineString(window.myCoordList)
+        else:
+            my_poly = Polygon(window.myCoordList)
         self.geojson =  crud.read_table(engine, self.arg1, self.arg2, self.arg3, self.arg4, self.arg5, self.arg6 ,self.arg7)
+        
         for geo in self.geojson:
             result.append([])
             coordinates = re.findall(r"[\d.]+", geo[0])
@@ -54,17 +62,29 @@ class QueryThread(QThread):
             BD_poly = Polygon(result[index])
 
             if BD_poly.contains(my_poly) or my_poly.contains(BD_poly) or my_poly.intersects(BD_poly):
-                    
-                
-                DBInfoList.append(self.geojson[index])
-                
+                window.DBInfoList.append(geo)
             else:
                 result.pop(index)
                 index-=1
             index+=1
-        self.resultsReady.emit(DBInfoList)
-        #self.resultsReady.emit([DBInfoList, widgetsIndex])
 
+        window.infoList = []
+        infoIndex = 0
+        for info in [window.DBInfoList]:
+            window.infoList.append([])
+            coordinates = re.findall(r"[\d.]+", info[0])
+            window.infoList[infoIndex].append([])
+            for i in range(0, len(coordinates), 2):
+                window.infoList[infoIndex][0].append([float(coordinates[i+1]), float(coordinates[i])])
+
+            for value in range(1, len(window.DBInfoList[0]),1):
+                window.infoList[infoIndex].append(window.DBInfoList[infoIndex][value])
+            infoIndex+=1
+
+        window.PageСontent = [window.infoList[i:i+5] for i in range(0, len(window.infoList), 5)]
+        
+        self.resultsReady.emit(window.PageСontent)
+        
 
 class InformWidget(QtWidgets.QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -72,12 +92,87 @@ class InformWidget(QtWidgets.QDialog, Ui_Dialog):
         self.setupUi(self)
 
 
+class AddCoordsDialog(QtWidgets.QDialog, Ui_CoordsDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.setWindowTitle("Добавление координат")
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.pushButton.clicked.connect(self.addCoords)
+
+        validator = QDoubleValidator()
+        validator.setNotation(QDoubleValidator.StandardNotation)
+        validator.setDecimals(6)
+        self.lineEdit.setValidator(validator)
+        self.lineEdit_2.setValidator(validator)
+        
+    
+    def addCoords(self):
+        self.lat = self.lineEdit.text().replace(',', '.')
+        self.lng = self.lineEdit_2.text().replace(',', '.')
+        window.coords_widget = CoordsWidget(self)
+        window.coords_widget.lineEdit.setText(f'{self.lat}')
+        window.coords_widget.lineEdit_2.setText(f'{self.lng}')
+        index = window.verticalLayout_10.count() - 1
+        window.verticalLayout_10.insertWidget(index, window.coords_widget)
+        window.myCoordList = []
+        for index in range(window.verticalLayout_10.count() - 1):
+            window.myCoordList.append([])
+            widget = window.verticalLayout_10.itemAt(index).widget()
+            window.myCoordList[index].append(float(widget.lineEdit.text()))
+            window.myCoordList[index].append(float(widget.lineEdit_2.text()))
+        window.map.page().runJavaScript(f"setNewBounds({window.myCoordList})")
+        self.close()
+
+
+class PageWidget(QtWidgets.QWidget, Ui_Page):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.pushButton.clicked.connect(self.next)
+        self.pushButton_2.clicked.connect(self.back)
+
+    def next(self):
+        openPage = window.stackedWidget.currentIndex()+1
+        if openPage > window.stackedWidget.count()-1:
+            pass
+        else:
+            if window.stackedWidget.widget(openPage).verticalLayout_4.count()-1 != len(window.PageСontent[openPage]):
+                for i in range(len(window.PageСontent[openPage])):
+                    window.snapshot = SnapshotWidget(window)
+                    window.stackedWidget.widget(openPage).verticalLayout_4.insertWidget(i, window.snapshot)
+
+            window.stackedWidget.widget(openPage).label_2.setText(f'{openPage+1} из {window.stackedWidget.count()}')
+            window.stackedWidget.setCurrentIndex(openPage)
+
+    def back(self):
+        openPage = window.stackedWidget.currentIndex()-1
+        if openPage < 0:
+            pass
+        else:
+            window.stackedWidget.widget(openPage).label_2.setText(f'{openPage+1} из {window.stackedWidget.count()}')
+            window.stackedWidget.setCurrentIndex(openPage) 
+        
+
+
 class CoordsWidget(QtWidgets.QWidget, Ui_Coords):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        
+        self.pushButton.clicked.connect(self.removeWidget)
 
+    def removeWidget(self):
+        index = window.verticalLayout_10.indexOf(self.sender().parent())
+        widgetToRemove = window.verticalLayout_10.takeAt(index)
+        widget = widgetToRemove.widget()
+        widget.deleteLater()
+        window.myCoordList = []
+        for index in range(window.verticalLayout_10.count() - 1):
+            window.myCoordList.append([])
+            widget = window.verticalLayout_10.itemAt(index).widget()
+            window.myCoordList[index].append(float(widget.lineEdit.text()))
+            window.myCoordList[index].append(float(widget.lineEdit_2.text()))
+        window.map.page().runJavaScript(f"setNewBounds({window.myCoordList})")
 
 
 class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
@@ -89,19 +184,31 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
 
 
     def displayPoly(self):
-        index = window.verticalLayout_4.indexOf(self.sender().parent())
+        index = window.stackedWidget.widget(window.stackedWidget.currentIndex()).verticalLayout_4.indexOf(self.sender().parent())
+        openPage = window.stackedWidget.currentIndex()
         if self.pushButton.isChecked():
-            window.map.page().runJavaScript(f"displayGeoList({result[index]})")
+            window.map.page().runJavaScript(f"displayGeoList({window.PageСontent[openPage][index][0]})")
         else:
-            latlngs = [f'LatLng({round(lat, 6)}, {round(lng, 6)})' for lat, lng in result[index][:-1]]
+            latlngs = [f'LatLng({round(lat, 6)}, {round(lng, 6)})' for lat, lng in window.PageСontent[openPage][index][0][:-1]]
             latlng_str = ','.join(latlngs)
             window.map.page().runJavaScript(f"removeGeoList('{latlng_str}')")
 
     def openInfo(self):
-        index = window.verticalLayout_4.indexOf(self.sender().parent())
-        print(index)
-        window.OpenInfoWindow.show()                                      # Отобразить окно InformWidget
+        index = window.stackedWidget.widget(window.stackedWidget.currentIndex()).verticalLayout_4.indexOf(self.sender().parent())
+        openPage = window.stackedWidget.currentIndex()
+        window.OpenInfoWindow.Satellite.setText(f'{window.PageСontent[openPage][index][2]}')
+        window.OpenInfoWindow.sensingTime.setText(f'{window.PageСontent[openPage][index][5]}')
+        window.OpenInfoWindow.creationTime.setText(f'{window.PageСontent[openPage][index][6]}')
+        window.OpenInfoWindow.cloudPercentage.setText(f'{window.PageСontent[openPage][index][11]}')
+        window.OpenInfoWindow.forestid.setText(f'{window.PageСontent[openPage][index][13]}')
+
+        path = window.DBInfoList[index][14]
+        dir_path, file_name = os.path.split(path)
+
+        window.OpenInfoWindow.Directory.setText(f'{dir_path}')
+        window.OpenInfoWindow.FileName.setText(f'{file_name}')
         
+        window.OpenInfoWindow.show()
 
 
 class LoginWindow(QtWidgets.QDialog, Ui_Form):
@@ -109,10 +216,23 @@ class LoginWindow(QtWidgets.QDialog, Ui_Form):
         super().__init__(parent)
         self.setupUi(self)
         self.setWindowTitle("Авторизация")
-        # self.UserNameLineEdit.setText('students_read_only')
-        # self.PasswordLineEdit.setText('Sf_=42jn*^3')
-        self.UserNameLineEdit.setText('postgres')
-        self.PasswordLineEdit.setText('89519821')
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.config = configparser.ConfigParser()  # создаём объекта парсера
+        self.config.read(".ini")  # читаем конфиг
+        self.service_id = "my_service"
+        self.username = self.config["Database"]["USERNAME"]
+        
+
+        if self.config["App"]["REMEMBERME"] == 'True':
+            self.checkBox.setChecked(True)
+        else:
+            self.checkBox.setChecked(False)
+
+        if self.username != '':
+            self.UserNameLineEdit.setText(f'{self.config["Database"]["USERNAME"]}')
+            password = keyring.get_password(self.service_id, self.username)
+            self.PasswordLineEdit.setText(f'{password}')
+
         self.LoginButton.clicked.connect(lambda: self.Authorization(self.UserNameLineEdit.text(), self.PasswordLineEdit.text()))
         self.authorized = False
 
@@ -120,10 +240,28 @@ class LoginWindow(QtWidgets.QDialog, Ui_Form):
     ###############################################################
     def Authorization(self, Username, Password):
         global engine
+        self.password = self.PasswordLineEdit.text()
         engine = connect.connect_to_db(Username, Password)
-        if engine == False: 
-            print("База данных не существует или неверно введено имя пользователя/пароль")
+        if engine == False:
+            self.UserNameLineEdit.setStyleSheet(stylesheet)
+            self.PasswordLineEdit.setStyleSheet(stylesheet)
+            self.ErrorLabel.setText("Неверно введено имя пользователя/пароль")
         else:
+
+            if self.checkBox.isChecked() == True:
+                self.config["Database"]["USERNAME"] = self.UserNameLineEdit.text()
+                self.config["App"]["REMEMBERME"] = 'True'
+                keyring.set_password(self.service_id, self.username, self.password)
+            else:
+                self.config["Database"]["USERNAME"] = ''
+                self.config["App"]["REMEMBERME"] = 'False'
+                try:
+                    keyring.delete_password(self.username, self.password)
+                except:
+                    pass
+            with open('.ini', 'w') as config_file:
+                self.config.write(config_file)
+            
             self.authorized = True 
             print("Подключение успешно")
             self.close()
@@ -149,6 +287,9 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         
         self.OpenInfoWindow = InformWidget(self)
         self.OpenInfoWindow.setWindowModality(QtCore.Qt.WindowModal)
+
+        self.OpenCoordsWindow = AddCoordsDialog(self)
+        self.OpenCoordsWindow.setWindowModality(QtCore.Qt.WindowModal)
 
         #Добавление QDoubleRangeSlider
         #########################################################################################
@@ -178,23 +319,26 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         #########################################################################################
         self.SearchButton.clicked.connect(self.search)
         self.pushButton.clicked.connect(self.display_coords)
+        #self.stackedWidget.setCurrentIndex(0)
 
     def showCoords(self):
-        for point in myCoordList:
-            self.coords_widget = CoordsWidget(self)
+        while self.verticalLayout_10.count() != 1:
+                widget_coords_item = self.verticalLayout_10.takeAt(0)
+                widget = widget_coords_item.widget()
+                widget.deleteLater()
 
-            self.coords_widget.lineEdit.setText(f'{round(point[0], 4)}')
-            self.coords_widget.lineEdit_2.setText(f'{round(point[1], 4)}')
-            self.verticalLayout_10.insertWidget(0, self.coords_widget)
+        index = 0 
+        for point in self.myCoordList:
+            self.coords_widget = CoordsWidget(self)
+            self.coords_widget.lineEdit.setText(f'{round(point[0], 6)}')
+            self.coords_widget.lineEdit_2.setText(f'{round(point[1], 6)}')
+            self.verticalLayout_10.insertWidget(index, self.coords_widget)
+            index+=1
+
 
     def display_coords(self):
-        try:
-            myCoordList
-        except NameError:
-            print('Не выделена область поиска!')
-        else:
-            for point in myCoordList:
-                print(point)
+        self.OpenCoordsWindow.show()
+
 
     def display_cloud(self):
         min, max = self.DoubleSlider.value()
@@ -204,15 +348,10 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
     def search(self):
         self.map.page().runJavaScript(f"removeAllGeoList()")
         result.clear()
-            
-        while self.verticalLayout_4.count() != 1:
-            widget_item = self.verticalLayout_4.takeAt(0)
-            widget = widget_item.widget()
-            widget.deleteLater()
-
+        
         try:
-            myCoordList
-        except NameError:
+            self.myCoordList
+        except AttributeError:
             print('Не выделена область поиска!')
         else:
             print('-'*5 + 'Параметры' + '-'*5)
@@ -254,10 +393,36 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         print('start')
 
     def onResultsReady(self, snapshot):
-        for i in range(len(snapshot)):
-            print(i)
-            self.snapshot = SnapshotWidget(self)
-            self.verticalLayout_4.insertWidget(i, self.snapshot)
+        if snapshot == []:
+            print('Ничего не найдено!')
+        else:
+            self.infoList = []
+            infoIndex = 0
+            for info in snapshot:
+                self.infoList.append([])
+                coordinates = re.findall(r"[\d.]+", info[0])
+                self.infoList[infoIndex].append([])
+                for i in range(0, len(coordinates), 2):
+                    self.infoList[infoIndex][0].append([float(coordinates[i+1]), float(coordinates[i])])
+
+                for value in range(1, len(snapshot[0]),1):
+                    self.infoList[infoIndex].append(snapshot[infoIndex][value])
+                infoIndex+=1
+
+            self.PageСontent = [self.infoList[i:i+5] for i in range(0, len(self.infoList), 5)]
+
+            print(F'Страниц: {len(self.PageСontent)}')
+
+            for i in range(len(self.PageСontent)):
+                print(F'Страница №{i+1}: {len(self.PageСontent[i])}')
+                self.page = PageWidget(self)
+                self.stackedWidget.addWidget(self.page)
+            self.stackedWidget.widget(0).label_2.setText(f'{window.stackedWidget.currentIndex()+1} из {window.stackedWidget.count()}')
+
+            for i in range(len(self.PageСontent[0])):
+                self.snapshot = SnapshotWidget(self)
+                self.stackedWidget.widget(0).verticalLayout_4.insertWidget(i, self.snapshot)
+
             
     def showEvent(self, event):
         print('Открыто окно! (Main Window)')
@@ -272,7 +437,17 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
 
 if __name__ == "__main__":
     result = []
-    
+    stylesheet = '''
+                QLineEdit{
+                    border:2px solid rgb(250, 50, 50);
+                    border-radius:5px;
+                    background-color: rgb(250, 250, 250);
+                }
+                QLineEdit:focus{
+                    border:3px solid rgb(255, 138, 138);;
+                    border-radius:5px;
+                }
+                '''
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     window.show()

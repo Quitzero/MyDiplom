@@ -403,29 +403,12 @@ class Ui_MainWindow(object):
         self.groupBox_4.setFont(font)
         self.groupBox_4.setObjectName("groupBox_4")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.groupBox_4)
-        self.verticalLayout_5.setContentsMargins(5, -1, 5, -1)
+        self.verticalLayout_5.setContentsMargins(0, 0, 0, -1)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.scrollArea = QtWidgets.QScrollArea(self.groupBox_4)
-        self.scrollArea.setMinimumSize(QtCore.QSize(280, 0))
-        self.scrollArea.setMaximumSize(QtCore.QSize(290, 16777215))
-        self.scrollArea.setStyleSheet("QScrollArea{\n"
-"border:0px;\n"
-"}\n"
-"QWidget#scrollAreaWidgetContents{\n"
-"background-color: rgb(255, 255, 255);\n"
-"}\n"
-"")
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 288, 638))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
-        self.verticalLayout_4.setObjectName("verticalLayout_4")
-        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_4.addItem(spacerItem3)
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-        self.verticalLayout_5.addWidget(self.scrollArea)
+        self.stackedWidget = QtWidgets.QStackedWidget(self.groupBox_4)
+        self.stackedWidget.setMinimumSize(QtCore.QSize(0, 0))
+        self.stackedWidget.setObjectName("stackedWidget")
+        self.verticalLayout_5.addWidget(self.stackedWidget)
         self.horizontalLayout.addWidget(self.groupBox_4)
         MainWindow.setCentralWidget(self.centralwidget)
 

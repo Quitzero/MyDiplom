@@ -44,7 +44,7 @@ var polygonGroup = L.layerGroup();
 map.addLayer(polygonGroup);
 
 //-----------------------| Функционал панели инструментов |----------------------------------------------
-// Создаение объекта QWebChannel и функции передающей данные в app.py 
+// Создаение объекта QWebChannel и функции передающей данные в main.py 
 var backend = null;
 function showCoords(coords) {
     new QWebChannel(qt.webChannelTransport, function(channel) {
@@ -65,6 +65,13 @@ map.on('draw:created', function (e){
     showCoords(layer.getLatLngs())
 });
 
+
+function setNewBounds(coords){
+    var layers = drawnFeatures.getLayers();
+    console.error(layers)
+    layers[0].setLatLngs(coords);
+    
+}
 //-----------------------| Функции |----------------------------------------------
 // Отображение полиона из базы данных
 

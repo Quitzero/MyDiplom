@@ -11,12 +11,29 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Dialog(object):
+class  Ui_CoordsDialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(300, 90)
         Dialog.setMinimumSize(QtCore.QSize(300, 90))
         Dialog.setMaximumSize(QtCore.QSize(300, 90))
+        Dialog.setStyleSheet("QWidget{\n"
+"background-color: rgb(255, 255, 255);\n"
+"}\n"
+"QLineEdit{\n"
+"border:2px solid #B8E2FF;\n"
+"border-radius:5px;\n"
+"background-color: rgb(250, 250, 250);\n"
+"}\n"
+"QLineEdit:hover{\n"
+"border:2px solid #0593ff;\n"
+"border-radius:5px;\n"
+"}\n"
+"QLineEdit:focus{\n"
+"border:2px solid #0593ff;\n"
+"border-radius:5px;\n"
+"}\n"
+"")
         self.horizontalLayoutWidget = QtWidgets.QWidget(Dialog)
         self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 281, 31))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
@@ -50,6 +67,16 @@ class Ui_Dialog(object):
         font.setBold(True)
         font.setWeight(75)
         self.pushButton.setFont(font)
+        self.pushButton.setStyleSheet("QPushButton{\n"
+"border:2px solid #B8E2FF;\n"
+"border-radius:5px;\n"
+"}\n"
+"QPushButton:hover{\n"
+"border:2px solid #0593ff;\n"
+"background-color: rgb(250, 250, 250);\n"
+"border-radius:5px;\n"
+"}\n"
+"")
         self.pushButton.setObjectName("pushButton")
 
         self.retranslateUi(Dialog)
@@ -67,7 +94,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
+    ui = Ui_CoordsDialog()
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())

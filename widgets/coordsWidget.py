@@ -23,8 +23,9 @@ class Ui_Coords(object):
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.horizontalLayout.addWidget(self.label)
-        self.lineEdit = QtWidgets.QLineEdit(Form)
-        self.lineEdit.setMinimumSize(QtCore.QSize(0, 24))
+        self.lineEdit = QtWidgets.QLabel(Form)
+        self.lineEdit.setMinimumSize(QtCore.QSize(80, 0))
+        self.lineEdit.setText("")
         self.lineEdit.setObjectName("lineEdit")
         self.horizontalLayout.addWidget(self.lineEdit)
         self.label_2 = QtWidgets.QLabel(Form)
@@ -33,12 +34,14 @@ class Ui_Coords(object):
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.horizontalLayout.addWidget(self.label_2)
-        self.lineEdit_2 = QtWidgets.QLineEdit(Form)
-        self.lineEdit_2.setMinimumSize(QtCore.QSize(0, 24))
+        self.lineEdit_2 = QtWidgets.QLabel(Form)
+        self.lineEdit_2.setMinimumSize(QtCore.QSize(80, 0))
+        self.lineEdit_2.setText("")
         self.lineEdit_2.setObjectName("lineEdit_2")
         self.horizontalLayout.addWidget(self.lineEdit_2)
         self.pushButton = QtWidgets.QPushButton(Form)
         self.pushButton.setMinimumSize(QtCore.QSize(24, 24))
+        self.pushButton.setMaximumSize(QtCore.QSize(24, 24))
         self.pushButton.setStyleSheet("QPushButton{\n"
 "border:none;\n"
 "    background-image: url(:/minus/minus-blue.png);\n"
