@@ -44,8 +44,6 @@ class QueryThread(QThread):
         self.arg7 = Ingestion_date_to
 
     def run(self):
-        window.DBInfoList = []
-        index = 0
         if len(window.myCoordList) == 1:
             my_poly = Point(window.myCoordList)
         elif len(window.myCoordList) == 2:
@@ -53,36 +51,28 @@ class QueryThread(QThread):
         else:
             my_poly = Polygon(window.myCoordList)
         self.geojson =  crud.read_table(engine, self.arg1, self.arg2, self.arg3, self.arg4, self.arg5, self.arg6 ,self.arg7)
-        
+
+        window.DBInfoList = []
+        index = 0
         for geo in self.geojson:
-            result.append([])
+            window.DBInfoList.append([])
             coordinates = re.findall(r"[\d.]+", geo[0])
+            window.DBInfoList[index].append([]) 
+            
             for i in range(0, len(coordinates), 2):
-                result[index].append([float(coordinates[i+1]), float(coordinates[i])])
-            BD_poly = Polygon(result[index])
-
-            if BD_poly.contains(my_poly) or my_poly.contains(BD_poly) or my_poly.intersects(BD_poly):
-                window.DBInfoList.append(geo)
-            else:
-                result.pop(index)
-                index-=1
+                window.DBInfoList[index][0].append([float(coordinates[i+1]), float(coordinates[i])])
+            for i in range(len(window.DBInfoList[index])):
+                BD_poly = Polygon(window.DBInfoList[index][i])
+                if BD_poly.contains(my_poly) or my_poly.contains(BD_poly) or my_poly.intersects(BD_poly):
+                    for value in range(2, len(geo),1):
+                        window.DBInfoList[index].append(geo[value])
+                else:
+                    window.DBInfoList.pop(index)
+                    index-=1
+                    if index < 0:
+                        index = 0
             index+=1
-
-        window.infoList = []
-        infoIndex = 0
-        for info in [window.DBInfoList]:
-            window.infoList.append([])
-            coordinates = re.findall(r"[\d.]+", info[0])
-            window.infoList[infoIndex].append([])
-            for i in range(0, len(coordinates), 2):
-                window.infoList[infoIndex][0].append([float(coordinates[i+1]), float(coordinates[i])])
-
-            for value in range(1, len(window.DBInfoList[0]),1):
-                window.infoList[infoIndex].append(window.DBInfoList[infoIndex][value])
-            infoIndex+=1
-
-        window.PageСontent = [window.infoList[i:i+5] for i in range(0, len(window.infoList), 5)]
-        
+        window.PageСontent = [window.DBInfoList[i:i+5] for i in range(0, len(window.DBInfoList), 5)]
         self.resultsReady.emit(window.PageСontent)
         
 
@@ -396,20 +386,6 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         if snapshot == []:
             print('Ничего не найдено!')
         else:
-            self.infoList = []
-            infoIndex = 0
-            for info in snapshot:
-                self.infoList.append([])
-                coordinates = re.findall(r"[\d.]+", info[0])
-                self.infoList[infoIndex].append([])
-                for i in range(0, len(coordinates), 2):
-                    self.infoList[infoIndex][0].append([float(coordinates[i+1]), float(coordinates[i])])
-
-                for value in range(1, len(snapshot[0]),1):
-                    self.infoList[infoIndex].append(snapshot[infoIndex][value])
-                infoIndex+=1
-
-            self.PageСontent = [self.infoList[i:i+5] for i in range(0, len(self.infoList), 5)]
 
             print(F'Страниц: {len(self.PageСontent)}')
 
