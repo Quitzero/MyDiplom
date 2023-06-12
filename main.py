@@ -1,6 +1,7 @@
 import os, sys
 from PyQt5 import QtWidgets, QtWebChannel, QtCore
 from PyQt5.QtCore import QDate, QThread, pyqtSignal
+from PyQt5.QtWidgets import QFileDialog
 from superqt import QDoubleRangeSlider
 from shapely.geometry import Polygon, LineString, Point
 from PyQt5.QtGui import QDoubleValidator
@@ -15,7 +16,7 @@ from widgets.infoWidget import Ui_Dialog
 from widgets.coordsWidget import Ui_Coords
 from widgets.addCoordsWidet import Ui_CoordsDialog
 from widgets.pageWidget import Ui_Page
-from connectNetworkDrive import connectDrive
+from NetworkDrive import connectDrive
 from DataBase import connect, crud
 
 
@@ -31,7 +32,6 @@ class Backend(QtCore.QObject):
 
 
 class QueryThread(QThread):
-    progressChanged = pyqtSignal(int)
     resultsReady = pyqtSignal(list)
 
     def __init__(self, dataset_satellite, Sensing_date_from, Sensing_date_to, cloudiness_min, cloudiness_max, Ingestion_date_from, Ingestion_date_to ,parent=None):
@@ -57,41 +57,48 @@ class QueryThread(QThread):
         index = 0
         for geo in self.geojson:
             window.DBInfoList.append([])
-            
             coordinates = re.findall(r"[\d.]+", geo[0])
-            window.DBInfoList[index].append([]) 
-            
+            coordinatesList = []
             for i in range(0, len(coordinates), 2):
-                print(coordinates)
-                window.DBInfoList[index][0].append([float(coordinates[i+1]), float(coordinates[i])])
-                print(window.DBInfoList[index][0])
-            
-            for i in range(len(window.DBInfoList[index])):
-                BD_poly = Polygon(window.DBInfoList[index][i])
-                if BD_poly.contains(my_poly) or my_poly.contains(BD_poly) or my_poly.intersects(BD_poly):
-                    for value in range(2, len(geo),1):
-                        window.DBInfoList[index].append(geo[value])
-                    index+=1
-                else:
-                    print('-')
-                    window.DBInfoList.pop(index)
-                    index-=1
-                    if index < 0:
-                        index = 0
-            
+                coordinatesList.append([float(coordinates[i+1]), float(coordinates[i])])
+            BD_poly = Polygon(coordinatesList)
+            if BD_poly.contains(my_poly) or my_poly.contains(BD_poly) or my_poly.intersects(BD_poly):
+                window.DBInfoList[index].append(coordinatesList)
+                for value in range(2, len(geo),1):
+                    window.DBInfoList[index].append(geo[value])
+                index+=1
+            else:
+                window.DBInfoList.pop(index)
+
         window.PageСontent = [window.DBInfoList[i:i+10] for i in range(0, len(window.DBInfoList), 10)]
         self.resultsReady.emit(window.PageСontent)
-        
 
+        
+class QueryThread_Drive(QThread):
+    resultsReady = pyqtSignal(bool)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def run(self):
+        results = connectDrive()
+        self.resultsReady.emit(results)
+        
 class InformWidget(QtWidgets.QDialog, Ui_Dialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.LoadButton.clicked.connect(self.download)
     
+    def onResultsReady(self, connectStatus):
+        print(connectStatus)
+    
     def download(self):
-        print(self.SatelliteLabel.text())
-
+        self.queryThreadDrive = QueryThread_Drive(self)
+        self.queryThreadDrive.resultsReady.connect(self.onResultsReady)
+        self.queryThreadDrive.start()
+        #fname = QFileDialog.getOpenFileName(self, 'Open file', f'{self.Directory.text()}')[0]
+        #print(fname)
 
 class AddCoordsDialog(QtWidgets.QDialog, Ui_CoordsDialog):
     def __init__(self, parent=None):
@@ -134,16 +141,19 @@ class PageWidget(QtWidgets.QWidget, Ui_Page):
         self.pushButton_2.clicked.connect(self.previousPage)
 
     def nextPage(self):
-        window.page = PageWidget(window)
-        window.stackedWidget.addWidget(window.page)
-        if window.stackedWidget.widget(window.stackedWidget.currentIndex()+1).verticalLayout_4.count() == 11:
+        if len(window.PageСontent) < window.stackedWidget.currentIndex()+2:
             pass
         else:
-            for i in range(len(window.PageСontent[window.stackedWidget.currentIndex()+1])):
-                    window.snapshot = SnapshotWidget(window)
-                    window.stackedWidget.widget(window.stackedWidget.currentIndex()+1).verticalLayout_4.insertWidget(i, window.snapshot)
-        window.stackedWidget.setCurrentIndex(window.stackedWidget.currentIndex()+1)
-        window.stackedWidget.widget(window.stackedWidget.currentIndex()).label_2.setText(f'{window.stackedWidget.currentIndex()+1} из {len(window.PageСontent)}')
+            window.page = PageWidget(window)
+            window.stackedWidget.addWidget(window.page)
+            if window.stackedWidget.widget(window.stackedWidget.currentIndex()+1).verticalLayout_4.count() != 1:
+                pass
+            else:
+                for i in range(len(window.PageСontent[window.stackedWidget.currentIndex()+1])):
+                        window.snapshot = SnapshotWidget(window)
+                        window.stackedWidget.widget(window.stackedWidget.currentIndex()+1).verticalLayout_4.insertWidget(i, window.snapshot)
+            window.stackedWidget.setCurrentIndex(window.stackedWidget.currentIndex()+1)
+            window.stackedWidget.widget(window.stackedWidget.currentIndex()).label_2.setText(f'{window.stackedWidget.currentIndex()+1} из {len(window.PageСontent)}')
 
 
     def previousPage(self):
@@ -196,13 +206,10 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
         window.OpenInfoWindow.creationTime.setText(f'{window.PageСontent[openPage][index][5]}')
         window.OpenInfoWindow.cloudPercentage.setText(f'{window.PageСontent[openPage][index][10]}')
         window.OpenInfoWindow.forestid.setText(f'{window.PageСontent[openPage][index][12]}')
-        print(window.PageСontent[openPage][index])
         path = window.PageСontent[openPage][index][13]
         dir_path, file_name = os.path.split(path)
-
         window.OpenInfoWindow.Directory.setText(f'{dir_path}')
         window.OpenInfoWindow.FileName.setText(f'{file_name}')
-        
         window.OpenInfoWindow.show()
 
 
@@ -380,23 +387,17 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
             
 
             self.queryThread = QueryThread(dataset_satellite, Sensing_date_from, Sensing_date_to, cloudiness_min, cloudiness_max, Ingestion_date_from, Ingestion_date_to, self)
-            self.queryThread.progressChanged.connect(self.onProgressChanged)
             self.queryThread.resultsReady.connect(self.onResultsReady)
             self.queryThread.start()
 
-    def onProgressChanged(self):
-        print('start')
-
     def onResultsReady(self, snapshot):
-
-        if snapshot == []:
-            print('Ничего не найдено!')
-        else:
-            while self.stackedWidget.count() > 0:
+        while self.stackedWidget.count() > 0:
                 widget = self.stackedWidget.widget(0)
                 self.stackedWidget.removeWidget(widget)
                 widget.deleteLater()
-
+        if snapshot == []:
+            print('Ничего не найдено!')
+        else:
             
             self.page = PageWidget(self)
             self.stackedWidget.addWidget(self.page)

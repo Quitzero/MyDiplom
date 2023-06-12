@@ -23,6 +23,13 @@
     <file>arrow1.png</file>
     <file>arrow2.png</file>
   </qresource>
+  <qresource prefix="load">
+    <file>loader.gif</file>
+  </qresource>
+  <qresource prefix="loop">
+    <file>loop-blue.png</file>
+    <file>loop-red.png</file>
+  </qresource>
   <qresource prefix="checked">
     <file>blank-blue.png</file>
     <file>checked-red.png</file>

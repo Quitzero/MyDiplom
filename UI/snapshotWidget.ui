@@ -99,8 +99,13 @@ border:3px solid  rgb(175,0,0);
       </size>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-image: url(:/loop/loop.png);
-background-position: center;</string>
+      <string notr="true">QPushButton{
+border:none;
+background-image: url(:/loop/loop-blue.png);
+}
+QPushButton:hover:!pressed{
+background-image: url(:/loop/loop-red.png);
+}</string>
      </property>
      <property name="text">
       <string/>
@@ -113,7 +118,7 @@ background-position: center;</string>
   </layout>
  </widget>
  <resources>
-  <include location="../resources/img/img.qrc"/>
+  <include location="../resources/img/Resources.qrc"/>
  </resources>
  <connections/>
 </ui>
