@@ -15,8 +15,8 @@ class Ui_Page(object):
     def setupUi(self, Page):
         Page.setObjectName("Page")
         Page.resize(300, 480)
-        Page.setMinimumSize(QtCore.QSize(300, 0))
-        Page.setMaximumSize(QtCore.QSize(300, 16777215))
+        Page.setMinimumSize(QtCore.QSize(320, 0))
+        Page.setMaximumSize(QtCore.QSize(320, 16777215))
         self.verticalLayout = QtWidgets.QVBoxLayout(Page)
         self.verticalLayout.setContentsMargins(-1, 0, -1, -1)
         self.verticalLayout.setObjectName("verticalLayout")

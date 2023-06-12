@@ -31,6 +31,9 @@ background-color: rgb(255, 255, 255);
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="bottomMargin">
+    <number>20</number>
+   </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -121,7 +124,7 @@ background-color: rgb(255, 255, 255);
         <x>0</x>
         <y>0</y>
         <width>482</width>
-        <height>374</height>
+        <height>363</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -134,13 +137,13 @@ background-color: rgb(255, 255, 255);
           <widget class="QLabel" name="SatelliteLabel">
            <property name="minimumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>16777215</height>
             </size>
            </property>
@@ -191,13 +194,13 @@ background-color: rgb(255, 255, 255);
           <widget class="QLabel" name="sensingTimeLabel">
            <property name="minimumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>16777215</height>
             </size>
            </property>
@@ -248,13 +251,13 @@ background-color: rgb(255, 255, 255);
           <widget class="QLabel" name="creationTimeLabel">
            <property name="minimumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>16777215</height>
             </size>
            </property>
@@ -305,13 +308,13 @@ background-color: rgb(255, 255, 255);
           <widget class="QLabel" name="cloudPercentageLabel">
            <property name="minimumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>16777215</height>
             </size>
            </property>
@@ -362,13 +365,13 @@ background-color: rgb(255, 255, 255);
           <widget class="QLabel" name="forestidLabel">
            <property name="minimumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>16777215</height>
             </size>
            </property>
@@ -419,13 +422,13 @@ background-color: rgb(255, 255, 255);
           <widget class="QLabel" name="DirectoryLabel">
            <property name="minimumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>16777215</height>
             </size>
            </property>
@@ -462,13 +465,13 @@ background-color: rgb(255, 255, 255);
           <widget class="QLabel" name="FileNameLabel">
            <property name="minimumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>180</width>
+             <width>150</width>
              <height>16777215</height>
             </size>
            </property>
@@ -495,19 +498,6 @@ background-color: rgb(255, 255, 255);
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
          <item>
           <widget class="QPushButton" name="LoadButton">
            <property name="minimumSize">
@@ -547,6 +537,19 @@ background-image: url(:/download/download-red.png);
             <string/>
            </property>
           </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </item>

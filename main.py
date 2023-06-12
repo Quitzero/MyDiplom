@@ -15,6 +15,7 @@ from widgets.infoWidget import Ui_Dialog
 from widgets.coordsWidget import Ui_Coords
 from widgets.addCoordsWidet import Ui_CoordsDialog
 from widgets.pageWidget import Ui_Page
+from connectNetworkDrive import connectDrive
 from DataBase import connect, crud
 
 
@@ -56,23 +57,29 @@ class QueryThread(QThread):
         index = 0
         for geo in self.geojson:
             window.DBInfoList.append([])
+            
             coordinates = re.findall(r"[\d.]+", geo[0])
             window.DBInfoList[index].append([]) 
             
             for i in range(0, len(coordinates), 2):
+                print(coordinates)
                 window.DBInfoList[index][0].append([float(coordinates[i+1]), float(coordinates[i])])
+                print(window.DBInfoList[index][0])
+            
             for i in range(len(window.DBInfoList[index])):
                 BD_poly = Polygon(window.DBInfoList[index][i])
                 if BD_poly.contains(my_poly) or my_poly.contains(BD_poly) or my_poly.intersects(BD_poly):
                     for value in range(2, len(geo),1):
                         window.DBInfoList[index].append(geo[value])
+                    index+=1
                 else:
+                    print('-')
                     window.DBInfoList.pop(index)
                     index-=1
                     if index < 0:
                         index = 0
-            index+=1
-        window.PageСontent = [window.DBInfoList[i:i+5] for i in range(0, len(window.DBInfoList), 5)]
+            
+        window.PageСontent = [window.DBInfoList[i:i+10] for i in range(0, len(window.DBInfoList), 10)]
         self.resultsReady.emit(window.PageСontent)
         
 
@@ -80,6 +87,10 @@ class InformWidget(QtWidgets.QDialog, Ui_Dialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+        self.LoadButton.clicked.connect(self.download)
+    
+    def download(self):
+        print(self.SatelliteLabel.text())
 
 
 class AddCoordsDialog(QtWidgets.QDialog, Ui_CoordsDialog):
@@ -119,31 +130,25 @@ class PageWidget(QtWidgets.QWidget, Ui_Page):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        self.pushButton.clicked.connect(self.next)
-        self.pushButton_2.clicked.connect(self.back)
+        self.pushButton.clicked.connect(self.nextPage)
+        self.pushButton_2.clicked.connect(self.previousPage)
 
-    def next(self):
-        openPage = window.stackedWidget.currentIndex()+1
-        if openPage > window.stackedWidget.count()-1:
+    def nextPage(self):
+        window.page = PageWidget(window)
+        window.stackedWidget.addWidget(window.page)
+        if window.stackedWidget.widget(window.stackedWidget.currentIndex()+1).verticalLayout_4.count() == 11:
             pass
         else:
-            if window.stackedWidget.widget(openPage).verticalLayout_4.count()-1 != len(window.PageСontent[openPage]):
-                for i in range(len(window.PageСontent[openPage])):
+            for i in range(len(window.PageСontent[window.stackedWidget.currentIndex()+1])):
                     window.snapshot = SnapshotWidget(window)
-                    window.stackedWidget.widget(openPage).verticalLayout_4.insertWidget(i, window.snapshot)
+                    window.stackedWidget.widget(window.stackedWidget.currentIndex()+1).verticalLayout_4.insertWidget(i, window.snapshot)
+        window.stackedWidget.setCurrentIndex(window.stackedWidget.currentIndex()+1)
+        window.stackedWidget.widget(window.stackedWidget.currentIndex()).label_2.setText(f'{window.stackedWidget.currentIndex()+1} из {len(window.PageСontent)}')
 
-            window.stackedWidget.widget(openPage).label_2.setText(f'{openPage+1} из {window.stackedWidget.count()}')
-            window.stackedWidget.setCurrentIndex(openPage)
 
-    def back(self):
-        openPage = window.stackedWidget.currentIndex()-1
-        if openPage < 0:
-            pass
-        else:
-            window.stackedWidget.widget(openPage).label_2.setText(f'{openPage+1} из {window.stackedWidget.count()}')
-            window.stackedWidget.setCurrentIndex(openPage) 
-        
-
+    def previousPage(self):
+        window.stackedWidget.setCurrentIndex(window.stackedWidget.currentIndex()-1)
+        window.stackedWidget.widget(window.stackedWidget.currentIndex()).label_2.setText(f'{window.stackedWidget.currentIndex()+1} из {len(window.PageСontent)}')
 
 class CoordsWidget(QtWidgets.QWidget, Ui_Coords):
     def __init__(self, parent=None):
@@ -186,13 +191,13 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
     def openInfo(self):
         index = window.stackedWidget.widget(window.stackedWidget.currentIndex()).verticalLayout_4.indexOf(self.sender().parent())
         openPage = window.stackedWidget.currentIndex()
-        window.OpenInfoWindow.Satellite.setText(f'{window.PageСontent[openPage][index][2]}')
-        window.OpenInfoWindow.sensingTime.setText(f'{window.PageСontent[openPage][index][5]}')
-        window.OpenInfoWindow.creationTime.setText(f'{window.PageСontent[openPage][index][6]}')
-        window.OpenInfoWindow.cloudPercentage.setText(f'{window.PageСontent[openPage][index][11]}')
-        window.OpenInfoWindow.forestid.setText(f'{window.PageСontent[openPage][index][13]}')
-
-        path = window.DBInfoList[index][14]
+        window.OpenInfoWindow.Satellite.setText(f'{window.PageСontent[openPage][index][1]}')
+        window.OpenInfoWindow.sensingTime.setText(f'{window.PageСontent[openPage][index][4]}')
+        window.OpenInfoWindow.creationTime.setText(f'{window.PageСontent[openPage][index][5]}')
+        window.OpenInfoWindow.cloudPercentage.setText(f'{window.PageСontent[openPage][index][10]}')
+        window.OpenInfoWindow.forestid.setText(f'{window.PageСontent[openPage][index][12]}')
+        print(window.PageСontent[openPage][index])
+        path = window.PageСontent[openPage][index][13]
         dir_path, file_name = os.path.split(path)
 
         window.OpenInfoWindow.Directory.setText(f'{dir_path}')
@@ -383,17 +388,20 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         print('start')
 
     def onResultsReady(self, snapshot):
+
         if snapshot == []:
             print('Ничего не найдено!')
         else:
+            while self.stackedWidget.count() > 0:
+                widget = self.stackedWidget.widget(0)
+                self.stackedWidget.removeWidget(widget)
+                widget.deleteLater()
 
-            print(F'Страниц: {len(self.PageСontent)}')
+            
+            self.page = PageWidget(self)
+            self.stackedWidget.addWidget(self.page)
 
-            for i in range(len(self.PageСontent)):
-                print(F'Страница №{i+1}: {len(self.PageСontent[i])}')
-                self.page = PageWidget(self)
-                self.stackedWidget.addWidget(self.page)
-            self.stackedWidget.widget(0).label_2.setText(f'{window.stackedWidget.currentIndex()+1} из {window.stackedWidget.count()}')
+            self.stackedWidget.widget(0).label_2.setText(f'{self.stackedWidget.currentIndex()+1} из {len(self.PageСontent)}')
 
             for i in range(len(self.PageСontent[0])):
                 self.snapshot = SnapshotWidget(self)

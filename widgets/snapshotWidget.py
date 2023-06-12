@@ -15,8 +15,8 @@ class Ui_snapshot(object):
     def setupUi(self, snapshot):
         snapshot.setObjectName("snapshot")
         snapshot.resize(270, 90)
-        snapshot.setMinimumSize(QtCore.QSize(270, 90))
-        snapshot.setMaximumSize(QtCore.QSize(270, 90))
+        snapshot.setMinimumSize(QtCore.QSize(250, 90))
+        snapshot.setMaximumSize(QtCore.QSize(250, 90))
         snapshot.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.horizontalLayout = QtWidgets.QHBoxLayout(snapshot)
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -25,7 +25,7 @@ class Ui_snapshot(object):
         self.Image.setMaximumSize(QtCore.QSize(70, 70))
         self.Image.setStyleSheet("")
         self.Image.setText("")
-        self.Image.setPixmap(QtGui.QPixmap("../resources/img/image-not-found.jpg"))
+        self.Image.setPixmap(QtGui.QPixmap("resources/img/image-not-found.jpg"))
         self.Image.setScaledContents(True)
         self.Image.setObjectName("Image")
         self.horizontalLayout.addWidget(self.Image)
@@ -46,8 +46,6 @@ class Ui_snapshot(object):
         self.pushButton = QtWidgets.QPushButton(snapshot)
         self.pushButton.setMinimumSize(QtCore.QSize(24, 24))
         self.pushButton.setMaximumSize(QtCore.QSize(24, 24))
-        self.pushButton.setStyleSheet("background-image: url(:/loop/loop.png);\n"
-"background-position: center;")
         self.pushButton.setText("")
         self.pushButton.setCheckable(True)
         self.pushButton.setObjectName("pushButton")
