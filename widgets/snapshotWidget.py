@@ -46,6 +46,24 @@ class Ui_snapshot(object):
         self.pushButton = QtWidgets.QPushButton(snapshot)
         self.pushButton.setMinimumSize(QtCore.QSize(24, 24))
         self.pushButton.setMaximumSize(QtCore.QSize(24, 24))
+        self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton.setStyleSheet("QPushButton{\n"
+"border:none;\n"
+"background-image: url(:/loop/loop-blue.png);\n"
+"}\n"
+"\n"
+"QPushButton:hover{\n"
+"background-image: url(:/loop/loop-red.png);\n"
+"}"
+"\n"
+"QPushButton:checked{\n"
+"background-image: url(:/loop/loop-red.png);\n"
+"}"
+"\n"
+"QPushButton:checked:hover{\n"
+"background-image: url(:/loop/loop-blue.png);\n"
+"}"
+)
         self.pushButton.setText("")
         self.pushButton.setCheckable(True)
         self.pushButton.setObjectName("pushButton")

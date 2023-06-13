@@ -4,7 +4,7 @@ from PyQt5.QtCore import QDate, QThread, pyqtSignal
 from PyQt5.QtWidgets import QFileDialog
 from superqt import QDoubleRangeSlider
 from shapely.geometry import Polygon, LineString, Point
-from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtGui import QDoubleValidator, QMovie
 import configparser
 import keyring
 import re
@@ -90,15 +90,10 @@ class InformWidget(QtWidgets.QDialog, Ui_Dialog):
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.LoadButton.clicked.connect(self.download)
     
-    def onResultsReady(self, connectStatus):
-        print(connectStatus)
-    
     def download(self):
-        self.queryThreadDrive = QueryThread_Drive(self)
-        self.queryThreadDrive.resultsReady.connect(self.onResultsReady)
-        self.queryThreadDrive.start()
-        #fname = QFileDialog.getOpenFileName(self, 'Open file', f'{self.Directory.text()}')[0]
-        #print(fname)
+        x = f'{self.Directory.text()}/{self.FileName.text()}'
+        fname = QFileDialog.getExistingDirectory(self, 'Open file', '/')[0]
+        print(fname)
 
 class AddCoordsDialog(QtWidgets.QDialog, Ui_CoordsDialog):
     def __init__(self, parent=None):
@@ -266,6 +261,11 @@ class LoginWindow(QtWidgets.QDialog, Ui_Form):
             
             self.authorized = True 
             print("Подключение успешно")
+            window.queryThreadDrive = QueryThread_Drive(window)
+            window.queryThreadDrive.resultsReady.connect(window.onLoadReady)
+            window.queryThreadDrive.start()
+            window.startAnimation()
+            window.label_2.setText("Идет подключение к сетевым дискам...")
             self.close()
 
     def closeEvent(self, event):
@@ -292,6 +292,11 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
 
         self.OpenCoordsWindow = AddCoordsDialog(self)
         self.OpenCoordsWindow.setWindowModality(QtCore.Qt.WindowModal)
+        self.movie = QMovie("resources\img\loader.gif")
+        self.label_3.setMovie(self.movie)
+        
+
+        
 
         #Добавление QDoubleRangeSlider
         #########################################################################################
@@ -321,7 +326,12 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         #########################################################################################
         self.SearchButton.clicked.connect(self.search)
         self.pushButton.clicked.connect(self.display_coords)
-        #self.stackedWidget.setCurrentIndex(0)
+
+    def startAnimation(self):
+        self.movie.start()
+  
+    def stopAnimation(self):
+        self.movie.stop()
 
     def showCoords(self):
         while self.verticalLayout_10.count() != 1:
@@ -384,11 +394,18 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
             cloudiness_min, cloudiness_max = self.DoubleSlider.value()
             print(f'Облачность: {round(cloudiness_min)}% - {round(cloudiness_max)}%')
             print('='*5 + 'Результат' + '='*5)
-            
-
             self.queryThread = QueryThread(dataset_satellite, Sensing_date_from, Sensing_date_to, cloudiness_min, cloudiness_max, Ingestion_date_from, Ingestion_date_to, self)
             self.queryThread.resultsReady.connect(self.onResultsReady)
             self.queryThread.start()
+
+    def onLoadReady(self, connectStatus):
+        self.stopAnimation()
+        self.label_3.hide()
+        if connectStatus == False:
+            #-----------
+            self.label_2.setText("Ошибка подключения к дискам!")
+        else:
+            self.label_2.setText("")
 
     def onResultsReady(self, snapshot):
         while self.stackedWidget.count() > 0:
@@ -433,6 +450,12 @@ if __name__ == "__main__":
                     border-radius:5px;
                 }
                 '''
+    stylesheetDrive = '''
+                QPushButton:hover{
+                    color: rgb(1, 196, 255);
+                    text-decoration: underline;
+                }
+    '''
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     window.show()

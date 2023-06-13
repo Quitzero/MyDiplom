@@ -32,7 +32,7 @@ background-color: rgb(255, 255, 255);
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="bottomMargin">
-    <number>20</number>
+    <number>40</number>
    </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -124,7 +124,7 @@ background-color: rgb(255, 255, 255);
         <x>0</x>
         <y>0</y>
         <width>482</width>
-        <height>363</height>
+        <height>343</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -518,6 +518,9 @@ background-color: rgb(255, 255, 255);
              <weight>75</weight>
              <bold>true</bold>
             </font>
+           </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
            </property>
            <property name="styleSheet">
             <string notr="true">QPushButton{

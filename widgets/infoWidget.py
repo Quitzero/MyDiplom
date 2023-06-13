@@ -21,7 +21,7 @@ class Ui_Dialog(object):
 "background-color: rgb(255, 255, 255);\n"
 "}")
         self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
-        self.verticalLayout.setContentsMargins(-1, -1, -1, 20)
+        self.verticalLayout.setContentsMargins(-1, -1, -1, 40)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -31,7 +31,7 @@ class Ui_Dialog(object):
         self.label.setMinimumSize(QtCore.QSize(200, 200))
         self.label.setMaximumSize(QtCore.QSize(200, 200))
         self.label.setText("")
-        self.label.setPixmap(QtGui.QPixmap("../resources/img/image-not-found.jpg"))
+        self.label.setPixmap(QtGui.QPixmap("resources/img/image-not-found.jpg"))
         self.label.setScaledContents(True)
         self.label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.label.setObjectName("label")
@@ -52,7 +52,7 @@ class Ui_Dialog(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 482, 363))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 482, 343))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_2.setSpacing(10)
@@ -228,6 +228,7 @@ class Ui_Dialog(object):
         font.setBold(True)
         font.setWeight(75)
         self.LoadButton.setFont(font)
+        self.LoadButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.LoadButton.setStyleSheet("QPushButton{\n"
 "border:none;\n"
 "width:24px;\n"
@@ -254,7 +255,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Подробная информация"))
         self.SatelliteLabel.setText(_translate("Dialog", "Спутник:"))
         self.sensingTimeLabel.setText(_translate("Dialog", "Период съемки:"))
         self.creationTimeLabel.setText(_translate("Dialog", "Период приема:"))

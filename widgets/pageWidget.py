@@ -15,8 +15,8 @@ class Ui_Page(object):
     def setupUi(self, Page):
         Page.setObjectName("Page")
         Page.resize(300, 480)
-        Page.setMinimumSize(QtCore.QSize(320, 0))
-        Page.setMaximumSize(QtCore.QSize(320, 16777215))
+        Page.setMinimumSize(QtCore.QSize(300, 0))
+        Page.setMaximumSize(QtCore.QSize(300, 16777215))
         self.verticalLayout = QtWidgets.QVBoxLayout(Page)
         self.verticalLayout.setContentsMargins(-1, 0, -1, -1)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -28,9 +28,11 @@ class Ui_Page(object):
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem)
         self.pushButton_2 = QtWidgets.QPushButton(Page)
+        self.pushButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout_6.addWidget(self.pushButton_2)
         self.pushButton = QtWidgets.QPushButton(Page)
+        self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButton.setObjectName("pushButton")
         self.horizontalLayout_6.addWidget(self.pushButton)
         self.verticalLayout.addLayout(self.horizontalLayout_6)
@@ -64,8 +66,8 @@ class Ui_Page(object):
         _translate = QtCore.QCoreApplication.translate
         Page.setWindowTitle(_translate("Page", "Form"))
         self.label_2.setText(_translate("Page", "1 из 1"))
-        self.pushButton_2.setText(_translate("Page", "back"))
-        self.pushButton.setText(_translate("Page", "next"))
+        self.pushButton_2.setText(_translate("Page", "Назад"))
+        self.pushButton.setText(_translate("Page", "Вперед"))
 
 
 if __name__ == "__main__":

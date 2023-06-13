@@ -42,6 +42,7 @@ class Ui_Coords(object):
         self.pushButton = QtWidgets.QPushButton(Form)
         self.pushButton.setMinimumSize(QtCore.QSize(24, 24))
         self.pushButton.setMaximumSize(QtCore.QSize(24, 24))
+        self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButton.setStyleSheet("QPushButton{\n"
 "border:none;\n"
 "    background-image: url(:/minus/minus-blue.png);\n"
