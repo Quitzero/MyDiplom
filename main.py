@@ -7,6 +7,7 @@ from shapely.geometry import Polygon, LineString, Point
 from PyQt5.QtGui import QDoubleValidator, QMovie
 import configparser
 import keyring
+import shutil
 import re
 
 from widgets.MainWindow import Ui_MainWindow
@@ -16,6 +17,7 @@ from widgets.infoWidget import Ui_Dialog
 from widgets.coordsWidget import Ui_Coords
 from widgets.addCoordsWidet import Ui_CoordsDialog
 from widgets.pageWidget import Ui_Page
+from widgets.errorDrive import Ui_error
 from NetworkDrive import connectDrive
 from DataBase import connect, crud
 
@@ -76,13 +78,34 @@ class QueryThread(QThread):
         
 class QueryThread_Drive(QThread):
     resultsReady = pyqtSignal(bool)
-    def __init__(self, parent=None):
+    def __init__(self, uername, password, parent=None):
         super().__init__(parent)
+        self.uername = uername
+        self.password = password
 
     def run(self):
-        results = connectDrive()
+        results = connectDrive(f'{self.uername}', f'{self.password}')
         self.resultsReady.emit(results)
         
+
+class ErrorWidget(QtWidgets.QDialog, Ui_error):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.pushButton.clicked.connect(self.connectDrive)
+
+    def connectDrive(self):
+        window.pushButton_2.setEnabled(False)
+        print(self.lineEdit.text())
+        print(self.lineEdit_2.text())
+        window.label_3.setVisible(True)
+        window.queryThreadDrive = QueryThread_Drive(self.lineEdit.text(), self.lineEdit_2.text(), window)
+        window.queryThreadDrive.resultsReady.connect(window.onLoadReady)
+        window.queryThreadDrive.start()
+        window.startAnimation()
+        window.pushButton_2.setText("Идет подключение к сетевым дискам...")
+        self.close()
+    
 class InformWidget(QtWidgets.QDialog, Ui_Dialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -91,9 +114,11 @@ class InformWidget(QtWidgets.QDialog, Ui_Dialog):
         self.LoadButton.clicked.connect(self.download)
     
     def download(self):
-        x = f'{self.Directory.text()}/{self.FileName.text()}'
-        fname = QFileDialog.getExistingDirectory(self, 'Open file', '/')[0]
-        print(fname)
+        meta = f'{self.Directory.text()}\{self.FileName.text()}'
+        fname = QFileDialog.getExistingDirectory(self, 'Open file', '/')
+        if fname != '':
+            shutil.copy(meta, fname)
+
 
 class AddCoordsDialog(QtWidgets.QDialog, Ui_CoordsDialog):
     def __init__(self, parent=None):
@@ -261,11 +286,11 @@ class LoginWindow(QtWidgets.QDialog, Ui_Form):
             
             self.authorized = True 
             print("Подключение успешно")
-            window.queryThreadDrive = QueryThread_Drive(window)
+            window.queryThreadDrive = QueryThread_Drive(window, None, None)
             window.queryThreadDrive.resultsReady.connect(window.onLoadReady)
             window.queryThreadDrive.start()
             window.startAnimation()
-            window.label_2.setText("Идет подключение к сетевым дискам...")
+            window.pushButton_2.setText("Идет подключение к сетевым дискам...")
             self.close()
 
     def closeEvent(self, event):
@@ -294,7 +319,7 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         self.OpenCoordsWindow.setWindowModality(QtCore.Qt.WindowModal)
         self.movie = QMovie("resources\img\loader.gif")
         self.label_3.setMovie(self.movie)
-        
+        self.pushButton_2.setEnabled(False)
 
         
 
@@ -326,6 +351,13 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         #########################################################################################
         self.SearchButton.clicked.connect(self.search)
         self.pushButton.clicked.connect(self.display_coords)
+        self.pushButton_2.clicked.connect(self.openErrorWindow)
+
+
+    def openErrorWindow(self):
+        self.OpenErrorWindow = ErrorWidget(self)
+        self.OpenErrorWindow.setWindowModality(QtCore.Qt.WindowModal)
+        self.OpenErrorWindow.show()
 
     def startAnimation(self):
         self.movie.start()
@@ -400,12 +432,15 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
 
     def onLoadReady(self, connectStatus):
         self.stopAnimation()
-        self.label_3.hide()
+        self.label_3.setVisible(False)
         if connectStatus == False:
             #-----------
-            self.label_2.setText("Ошибка подключения к дискам!")
+            self.pushButton_2.setText("Ошибка подключения к дискам!")
+            self.pushButton_2.setEnabled(True)
+            self.pushButton_2.setStyleSheet(stylesheetDrive)
         else:
-            self.label_2.setText("")
+            self.pushButton_2.setEnabled(False)
+            self.pushButton_2.setText("")
 
     def onResultsReady(self, snapshot):
         while self.stackedWidget.count() > 0:
@@ -451,6 +486,10 @@ if __name__ == "__main__":
                 }
                 '''
     stylesheetDrive = '''
+                QPushButton{
+                    background-color: rgb(255, 255, 255);
+                    border:none;
+                }
                 QPushButton:hover{
                     color: rgb(1, 196, 255);
                     text-decoration: underline;

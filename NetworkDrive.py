@@ -3,10 +3,10 @@ import subprocess
 import re
 
 
-def connectDrive():
+def connectDrive(username, password):
     # ---------------------
-    username = 'MicrosoftAccount\dima.sak.dmitriy.sak@mail.ru'
-    password = '89519821Dd'
+    #username = 'MicrosoftAccount\dima.sak.dmitriy.sak@mail.ru'
+    #password = '89519821Dd1'
     drive_letter = 'S:'
     driveList = [r'\\Desktop-ceiepvc\Rackstation']
     # ---------------------

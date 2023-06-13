@@ -395,18 +395,19 @@ class Ui_MainWindow(object):
         self.label_3.setMinimumSize(QtCore.QSize(30, 30))
         self.label_3.setMaximumSize(QtCore.QSize(30, 30))
         self.label_3.setText("")
+        self.label_3.setPixmap(QtGui.QPixmap(":/load/loader.gif"))
         self.label_3.setScaledContents(True)
         self.label_3.setObjectName("label_3")
         self.horizontalLayout_2.addWidget(self.label_3)
-        self.label_2 = QtWidgets.QLabel(self.groupBox)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(False)
-        font.setWeight(50)
-        self.label_2.setFont(font)
-        self.label_2.setObjectName("label_2")
-        self.label_2.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.horizontalLayout_2.addWidget(self.label_2)
+        self.pushButton_2 = QtWidgets.QPushButton(self.groupBox)
+        self.pushButton_2.setMinimumSize(QtCore.QSize(0, 30))
+        self.pushButton_2.setStyleSheet("QPushButton{\n"
+"background-color: rgb(255, 255, 255);\n"
+"border:none;\n"
+"}\n"
+"")
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.horizontalLayout_2.addWidget(self.pushButton_2)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.horizontalLayout.addWidget(self.groupBox)
         self.groupBox_4 = QtWidgets.QGroupBox(self.centralwidget)

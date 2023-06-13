@@ -5,3 +5,4 @@ pyuic5 -x infoWidget.ui -o ../widgets/infoWidget.py
 pyuic5 -x coordsWidget.ui -o ../widgets/coordsWidget.py
 pyuic5 -x addCoordsWidet.ui -o ../widgets/addCoordsWidet.py
 pyuic5 -x pageWidget.ui -o ../widgets/pageWidget.py
+pyuic5 -x errorDrive.ui -o ../widgets/errorDrive.py

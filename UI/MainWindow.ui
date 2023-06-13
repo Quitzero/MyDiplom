@@ -741,13 +741,19 @@ background-color: rgb(252, 252, 252);
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_2">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
+          <widget class="QPushButton" name="pushButton_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{
+background-color: rgb(255, 255, 255);
+border:none;
+}
+</string>
            </property>
            <property name="text">
             <string>Идет подключение к сетевому диску...</string>
@@ -763,13 +769,13 @@ background-color: rgb(252, 252, 252);
      <widget class="QGroupBox" name="groupBox_4">
       <property name="minimumSize">
        <size>
-        <width>300</width>
+        <width>320</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>300</width>
+        <width>320</width>
         <height>16777215</height>
        </size>
       </property>

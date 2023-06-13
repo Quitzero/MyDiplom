@@ -68,7 +68,6 @@ map.on('draw:created', function (e){
 
 function setNewBounds(coords){
     var layers = drawnFeatures.getLayers();
-    console.error(layers)
     layers[0].setLatLngs(coords);
     
 }
