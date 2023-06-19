@@ -4,12 +4,14 @@ from PyQt5.QtCore import QDate, QThread, pyqtSignal
 from PyQt5.QtWidgets import QFileDialog, QProgressBar
 from superqt import QDoubleRangeSlider
 from shapely.geometry import Polygon, LineString, Point
-from PyQt5.QtGui import QDoubleValidator, QMovie, QPixmap
+from PyQt5.QtGui import QDoubleValidator, QMovie, QPixmap, QImage  
 import configparser
 import keyring
 import re
 import zipfile
 import py7zr
+import tempfile
+from PIL import Image
 
 from widgets.MainWindow import Ui_MainWindow
 from widgets.LoginWindow import Ui_Form
@@ -136,6 +138,7 @@ class InformWidget(QtWidgets.QDialog, Ui_Dialog):
         super().__init__(parent)
         self.setupUi(self)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        
       
 
 class AddCoordsDialog(QtWidgets.QDialog, Ui_CoordsDialog):
@@ -251,11 +254,18 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
     def update_progress(self, status):
         if status == False:
             print('open')
+            self.startAnimation()
             self.label.setVisible(True)
         else:
             print('close')
+            self.stopAnimation()
             self.label.setVisible(False)
 
+    def startAnimation(self):
+        self.movie.start()
+  
+    def stopAnimation(self):
+        self.movie.stop()
 
     def displayPoly(self):
         index = window.stackedWidget.widget(window.stackedWidget.currentIndex()).verticalLayout_4.indexOf(self.sender().parent())
@@ -268,6 +278,7 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
             window.map.page().runJavaScript(f"removeGeoList('{latlng_str}')")
 
     def openInfo(self):
+        Image.MAX_IMAGE_PIXELS = None
         index = window.stackedWidget.widget(window.stackedWidget.currentIndex()).verticalLayout_4.indexOf(self.sender().parent())
         openPage = window.stackedWidget.currentIndex()
         window.OpenInfoWindow.satellite.setText(f'{window.PageСontent[openPage][index][1]}')
@@ -279,6 +290,36 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
         path = window.PageСontent[openPage][index][13]
         dir_path, file_name = os.path.split(path)
         window.OpenInfoWindow.Directory.setText(f'{dir_path}')
+        if window.status == False:
+            pass
+        else:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                try:
+                    if file_name.split('.')[-1] == 'zip':
+                        with zipfile.ZipFile(f'{path}', 'r') as zip_ref:
+                            for file_name in zip_ref.namelist():
+                                if file_name.endswith('.jp2'):
+                                    zip_ref.extract(file_name, tmpdir)
+                                    with open(fr'{tmpdir}/{file_name}.TIF', 'rb') as f:
+                                        image_data = f.read()
+                                        pixmap = QPixmap()
+                                        pixmap.loadFromData(image_data)
+                                        window.OpenInfoWindow.label.setPixmap(pixmap)
+                                    break
+                    elif file_name.split('.')[-1] == '7z':
+                        with py7zr.SevenZipFile(f'{path}', 'r') as zip_ref:
+                            for file_name in zip_ref.getnames():
+                                if file_name.endswith('.TIF'):
+                                    target = [file_name]
+                                    zip_ref.extract(targets=target, path = fr'{tmpdir}')
+                                    with open(fr'{tmpdir}/{file_name}', 'rb') as f:
+                                        image_data = f.read()
+                                        pixmap = QPixmap()
+                                        pixmap.loadFromData(image_data)
+                                        window.OpenInfoWindow.label.setPixmap(pixmap)
+                                    break
+                except:
+                    pass
         window.OpenInfoWindow.show()
 
 
