@@ -228,6 +228,8 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
         self.pushButton.clicked.connect(self.displayPoly)
         self.moreButton.clicked.connect(self.openInfo)
         self.LoadButton.clicked.connect(self.download)
+        self.movie = QMovie("resources\img\loader.gif")
+        self.label.setMovie(self.movie)
         self.label.setVisible(False)
         if window.status == False:
             self.LoadButton.setToolTip("Не подключены сетевые диски!")
@@ -298,9 +300,9 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
                     if file_name.split('.')[-1] == 'zip':
                         with zipfile.ZipFile(f'{path}', 'r') as zip_ref:
                             for file_name in zip_ref.namelist():
-                                if file_name.endswith('.jp2'):
+                                if file_name.endswith('.TIF'):
                                     zip_ref.extract(file_name, tmpdir)
-                                    with open(fr'{tmpdir}/{file_name}.TIF', 'rb') as f:
+                                    with open(fr'{tmpdir}/{file_name}', 'rb') as f:
                                         image_data = f.read()
                                         pixmap = QPixmap()
                                         pixmap.loadFromData(image_data)

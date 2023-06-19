@@ -3,8 +3,8 @@
 var mapOptions = {
     center: [60.8823, 68.9831],
     maxZoom: 14,
-    minZoom: 6,
-    zoom: 8,
+    minZoom: 4,
+    zoom: 6,
     maxBounds: [
         //south west
         [57.4212, 56.4257],
