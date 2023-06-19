@@ -2,10 +2,15 @@
 // Создание опций карты
 var mapOptions = {
     center: [60.8823, 68.9831],
-    
     maxZoom: 14,
     minZoom: 4,
-    zoom: 4,
+    zoom: 8,
+    maxBounds: [
+        //south west
+        [57.4212, 56.4257],
+        //north east
+        [66.4079, 87.4951]
+        ],
 }
 
 // Создание объекта карты

@@ -17,24 +17,46 @@ class Ui_Page(object):
         Page.resize(300, 480)
         Page.setMinimumSize(QtCore.QSize(300, 0))
         Page.setMaximumSize(QtCore.QSize(300, 16777215))
+        Page.setStyleSheet("QPushButton#back{\n"
+"border: none;\n"
+"}\n"
+"QPushButton#back:hover{\n"
+"color:rgb(0,157,255);\n"
+"text-decoration: underline;\n"
+"}\n"
+"QPushButton#next{\n"
+"border: none;\n"
+"}\n"
+"QPushButton#next:hover{\n"
+"color:rgb(0,157,255);\n"
+"text-decoration: underline;\n"
+"}")
         self.verticalLayout = QtWidgets.QVBoxLayout(Page)
         self.verticalLayout.setContentsMargins(-1, 0, -1, -1)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.label_2 = QtWidgets.QLabel(Page)
-        self.label_2.setObjectName("label_2")
-        self.horizontalLayout_6.addWidget(self.label_2)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem)
-        self.pushButton_2 = QtWidgets.QPushButton(Page)
-        self.pushButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout_6.addWidget(self.pushButton_2)
-        self.pushButton = QtWidgets.QPushButton(Page)
-        self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout_6.addWidget(self.pushButton)
+        self.back = QtWidgets.QPushButton(Page)
+        self.back.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.back.setStyleSheet("")
+        self.back.setObjectName("back")
+        self.horizontalLayout_6.addWidget(self.back)
+        self.label_2 = QtWidgets.QLabel(Page)
+        self.label_2.setStyleSheet("QLabel{\n"
+"padding-left:5px;\n"
+"padding-right:5px;\n"
+"}")
+        self.label_2.setObjectName("label_2")
+        self.horizontalLayout_6.addWidget(self.label_2)
+        self.next = QtWidgets.QPushButton(Page)
+        self.next.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.next.setStyleSheet("")
+        self.next.setObjectName("next")
+        self.horizontalLayout_6.addWidget(self.next)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem1)
         self.verticalLayout.addLayout(self.horizontalLayout_6)
         self.scrollArea = QtWidgets.QScrollArea(Page)
         self.scrollArea.setMinimumSize(QtCore.QSize(0, 0))
@@ -49,13 +71,13 @@ class Ui_Page(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 282, 440))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 282, 443))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_4.setContentsMargins(5, -1, 5, -1)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_4.addItem(spacerItem1)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_4.addItem(spacerItem2)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.scrollArea)
 
@@ -65,9 +87,9 @@ class Ui_Page(object):
     def retranslateUi(self, Page):
         _translate = QtCore.QCoreApplication.translate
         Page.setWindowTitle(_translate("Page", "Form"))
+        self.back.setText(_translate("Page", "« Назад"))
         self.label_2.setText(_translate("Page", "1 из 1"))
-        self.pushButton_2.setText(_translate("Page", "Назад"))
-        self.pushButton.setText(_translate("Page", "Вперед"))
+        self.next.setText(_translate("Page", "Вперед »"))
 
 
 if __name__ == "__main__":

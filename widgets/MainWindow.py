@@ -441,7 +441,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.AdvancedSearch.setTitle(_translate("MainWindow", "Расширенный поиск"))
         self.SatelliteLabel.setText(_translate("MainWindow", "Спутниковая система"))
-        self.SatelliteComboBox.setItemText(0, _translate("MainWindow", "Landsat 5"))
+        self.SatelliteComboBox.setItemText(0, _translate("MainWindow", "Landsat 8"))
         self.SatelliteComboBox.setItemText(1, _translate("MainWindow", "Landsat 9"))
         self.SatelliteComboBox.setItemText(2, _translate("MainWindow", "Sentinel-2"))
         self.SensingLabel.setText(_translate("MainWindow", "Период зондирования"))

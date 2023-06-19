@@ -6,8 +6,8 @@ import re
 def connectDrive(username, password):
     # ---------------------
     #username = 'MicrosoftAccount\dima.sak.dmitriy.sak@mail.ru'
-    #password = '89519821Dd1'
-    drive_letter = 'S:'
+    #password = '89519821Dd'
+    drive_letter = 'U:'
     driveList = [r'\\Desktop-ceiepvc\Rackstation']
     # ---------------------
 

@@ -1,14 +1,15 @@
 import os, sys
-from PyQt5 import QtWidgets, QtWebChannel, QtCore
+from PyQt5 import QtWidgets, QtWebChannel, QtCore, QtGui
 from PyQt5.QtCore import QDate, QThread, pyqtSignal
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QProgressBar
 from superqt import QDoubleRangeSlider
 from shapely.geometry import Polygon, LineString, Point
-from PyQt5.QtGui import QDoubleValidator, QMovie
+from PyQt5.QtGui import QDoubleValidator, QMovie, QPixmap
 import configparser
 import keyring
-import shutil
 import re
+import zipfile
+import py7zr
 
 from widgets.MainWindow import Ui_MainWindow
 from widgets.LoginWindow import Ui_Form
@@ -19,7 +20,8 @@ from widgets.addCoordsWidet import Ui_CoordsDialog
 from widgets.pageWidget import Ui_Page
 from widgets.errorDrive import Ui_error
 from NetworkDrive import connectDrive
-from DataBase import connect, crud
+import dataBaseFolder.connect
+import dataBaseFolder.crud
 
 
 class Backend(QtCore.QObject):
@@ -53,7 +55,7 @@ class QueryThread(QThread):
             my_poly = LineString(window.myCoordList)
         else:
             my_poly = Polygon(window.myCoordList)
-        self.geojson =  crud.read_table(engine, self.arg1, self.arg2, self.arg3, self.arg4, self.arg5, self.arg6 ,self.arg7)
+        self.geojson = dataBaseFolder.crud.read_table(engine, self.arg1, self.arg2, self.arg3, self.arg4, self.arg5, self.arg6 ,self.arg7)
 
         window.DBInfoList = []
         index = 0
@@ -73,6 +75,7 @@ class QueryThread(QThread):
                 window.DBInfoList.pop(index)
 
         window.PageСontent = [window.DBInfoList[i:i+10] for i in range(0, len(window.DBInfoList), 10)]
+
         self.resultsReady.emit(window.PageСontent)
 
         
@@ -86,18 +89,40 @@ class QueryThread_Drive(QThread):
     def run(self):
         results = connectDrive(f'{self.uername}', f'{self.password}')
         self.resultsReady.emit(results)
-        
+
+
+class CopyThread(QThread):
+    progressChanged = pyqtSignal(bool)
+
+    def __init__(self, source, destination):
+        super().__init__()
+        self.source = source
+        self.destination = destination
+
+    def run(self):
+        meta = fr'{self.source}'
+        extension = meta.split('.')[-1]
+        if extension == 'zip':
+            self.progressChanged.emit(False)
+            with zipfile.ZipFile(meta, 'r') as archive:
+                archive.extractall(self.destination)
+                self.progressChanged.emit(True)
+        else:
+            self.progressChanged.emit(False)
+            with py7zr.SevenZipFile(self.source, 'r') as archive:
+                archive.extractall(self.destination)
+                self.progressChanged.emit(True)
+
 
 class ErrorWidget(QtWidgets.QDialog, Ui_error):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setupUi(self)
-        self.pushButton.clicked.connect(self.connectDrive)
+        self.pushButton.clicked.connect(self.myConnectDrive)
 
-    def connectDrive(self):
+    def myConnectDrive(self):
         window.pushButton_2.setEnabled(False)
-        print(self.lineEdit.text())
-        print(self.lineEdit_2.text())
         window.label_3.setVisible(True)
         window.queryThreadDrive = QueryThread_Drive(self.lineEdit.text(), self.lineEdit_2.text(), window)
         window.queryThreadDrive.resultsReady.connect(window.onLoadReady)
@@ -111,14 +136,7 @@ class InformWidget(QtWidgets.QDialog, Ui_Dialog):
         super().__init__(parent)
         self.setupUi(self)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
-        self.LoadButton.clicked.connect(self.download)
-    
-    def download(self):
-        meta = f'{self.Directory.text()}\{self.FileName.text()}'
-        fname = QFileDialog.getExistingDirectory(self, 'Open file', '/')
-        if fname != '':
-            shutil.copy(meta, fname)
-
+      
 
 class AddCoordsDialog(QtWidgets.QDialog, Ui_CoordsDialog):
     def __init__(self, parent=None):
@@ -157,8 +175,8 @@ class PageWidget(QtWidgets.QWidget, Ui_Page):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        self.pushButton.clicked.connect(self.nextPage)
-        self.pushButton_2.clicked.connect(self.previousPage)
+        self.next.clicked.connect(self.nextPage)
+        self.back.clicked.connect(self.previousPage)
 
     def nextPage(self):
         if len(window.PageСontent) < window.stackedWidget.currentIndex()+2:
@@ -206,6 +224,37 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
         self.setupUi(self)
         self.pushButton.clicked.connect(self.displayPoly)
         self.moreButton.clicked.connect(self.openInfo)
+        self.LoadButton.clicked.connect(self.download)
+        self.label.setVisible(False)
+        if window.status == False:
+            self.LoadButton.setToolTip("Не подключены сетевые диски!")
+        else:
+            self.LoadButton.setToolTip("Загрузить на устройство")
+        
+    def download(self):
+        if window.status == False:
+            QtWidgets.QMessageBox.critical(self, "Ошибка ", "Не подключены сетевые диски", QtWidgets.QMessageBox.Ok)
+        else:
+            index = window.stackedWidget.widget(window.stackedWidget.currentIndex()).verticalLayout_4.indexOf(self.sender().parent())
+            openPage = window.stackedWidget.currentIndex()
+            path = window.PageСontent[openPage][index][13]
+            dir_path, file_name = os.path.split(path)
+            meta = fr'{dir_path}\{file_name}'
+            fname = QFileDialog.getExistingDirectory(self, 'Сохранить', '/')
+            if fname == '':
+                pass
+            else:
+                self.copy_thread = CopyThread(f'{meta}', f'{fname}')
+                self.copy_thread.progressChanged.connect(self.update_progress)
+                self.copy_thread.start()
+
+    def update_progress(self, status):
+        if status == False:
+            print('open')
+            self.label.setVisible(True)
+        else:
+            print('close')
+            self.label.setVisible(False)
 
 
     def displayPoly(self):
@@ -221,7 +270,8 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
     def openInfo(self):
         index = window.stackedWidget.widget(window.stackedWidget.currentIndex()).verticalLayout_4.indexOf(self.sender().parent())
         openPage = window.stackedWidget.currentIndex()
-        window.OpenInfoWindow.Satellite.setText(f'{window.PageСontent[openPage][index][1]}')
+        window.OpenInfoWindow.satellite.setText(f'{window.PageСontent[openPage][index][1]}')
+        window.OpenInfoWindow.SceneIdentifier.setText(f'{window.PageСontent[openPage][index][2]}')
         window.OpenInfoWindow.sensingTime.setText(f'{window.PageСontent[openPage][index][4]}')
         window.OpenInfoWindow.creationTime.setText(f'{window.PageСontent[openPage][index][5]}')
         window.OpenInfoWindow.cloudPercentage.setText(f'{window.PageСontent[openPage][index][10]}')
@@ -229,7 +279,6 @@ class SnapshotWidget(QtWidgets.QWidget, Ui_snapshot):
         path = window.PageСontent[openPage][index][13]
         dir_path, file_name = os.path.split(path)
         window.OpenInfoWindow.Directory.setText(f'{dir_path}')
-        window.OpenInfoWindow.FileName.setText(f'{file_name}')
         window.OpenInfoWindow.show()
 
 
@@ -263,7 +312,7 @@ class LoginWindow(QtWidgets.QDialog, Ui_Form):
     def Authorization(self, Username, Password):
         global engine
         self.password = self.PasswordLineEdit.text()
-        engine = connect.connect_to_db(Username, Password)
+        engine = dataBaseFolder.connect.connect_to_db(Username, Password)
         if engine == False:
             self.UserNameLineEdit.setStyleSheet(stylesheet)
             self.PasswordLineEdit.setStyleSheet(stylesheet)
@@ -320,8 +369,6 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         self.movie = QMovie("resources\img\loader.gif")
         self.label_3.setMovie(self.movie)
         self.pushButton_2.setEnabled(False)
-
-        
 
         #Добавление QDoubleRangeSlider
         #########################################################################################
@@ -431,9 +478,10 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
             self.queryThread.start()
 
     def onLoadReady(self, connectStatus):
+        self.status = connectStatus
         self.stopAnimation()
         self.label_3.setVisible(False)
-        if connectStatus == False:
+        if self.status == False:
             #-----------
             self.pushButton_2.setText("Ошибка подключения к дискам!")
             self.pushButton_2.setEnabled(True)

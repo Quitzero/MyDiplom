@@ -38,6 +38,7 @@ class Ui_error(object):
         self.lineEdit_2.setGeometry(QtCore.QRect(40, 240, 250, 30))
         self.lineEdit_2.setMinimumSize(QtCore.QSize(100, 30))
         self.lineEdit_2.setMaximumSize(QtCore.QSize(250, 16777215))
+        self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.Password)
         self.lineEdit_2.setObjectName("lineEdit_2")
         self.label = QtWidgets.QLabel(Dialog)
         self.label.setGeometry(QtCore.QRect(40, 20, 251, 81))
@@ -72,12 +73,12 @@ class Ui_error(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Ввод учетных данных"))
         self.lineEdit.setPlaceholderText(_translate("Dialog", "Имя пользователя"))
         self.lineEdit_2.setPlaceholderText(_translate("Dialog", "Пароль"))
-        self.label.setText(_translate("Dialog", "При подключении к сетевым дискам произошла ошибка. Скорее всего были введены неправильные учетные данные."))
+        self.label.setText(_translate("Dialog", "При подключении к сетевым дискам произошла ошибка."))
         self.pushButton.setText(_translate("Dialog", "Подключить"))
-        self.label_2.setText(_translate("Dialog", "Для исправления этой проблемы введите свои учетные данные:"))
+        self.label_2.setText(_translate("Dialog", "Введите свои учетные данные:"))
 
 
 if __name__ == "__main__":
